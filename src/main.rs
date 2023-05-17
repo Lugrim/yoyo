@@ -13,14 +13,30 @@ struct Prob {
     ns: Vec<u8>,
 }
 
-impl Prob {
-    fn actual_counts(&self) -> Vec<u8> {
-        let mut res = vec![0; 10];
+impl Solvable<Prob> for Prob {
+    fn first_solution(&self) -> Option<Prob> {
+        self.rec_solve(0)
+    }
 
-        for i in 0..self.ns.len() as u8 {
+    fn all_solutions(&self) -> Vec<Prob> {
+        let mut res = Vec::new();
+        self.rec_solve_fill(0, &mut res);
+        res
+    }
+}
+
+impl Prob {
+    fn len(&self) -> u8 {
+        self.ns.len() as u8
+    }
+
+    fn actual_counts(&self) -> Vec<u8> {
+        let mut res = vec![0; self.len() as usize];
+
+        for i in 0..self.len() {
             let mut c = 0;
-            for j in 0..self.ns.len() {
-                if self.ns[j] == i {
+            for j in 0..self.len() {
+                if self.ns[j as usize] == i {
                     c += 1;
                 }
             }
@@ -33,29 +49,43 @@ impl Prob {
         self.actual_counts() == self.ns
     }
 
-    fn solve(&self, from: u8) -> Option<Prob> {
-        eprint!("{:?}\r", self.ns);
-        let len = self.ns.len();
+    fn rec_solve_fill(&self, from: u8, result: &mut Vec<Prob>) {
+        let len = self.len();
 
-        if self.check_ns() {
-            Some(Prob {
-                ns: self.ns.clone()
-            })
-        } else {
-            for i in 0..len as u8 {
-                let mut new_ns = self.ns.clone();
-                new_ns[from as usize] = i;
-                let new_prob = Prob {
-                        ns: new_ns,
-                    };
-                if from < len as u8 - 1 {
-                    if let Some(p) = new_prob.solve(from + 1) {
-                            return Some(p)
-                    }
+        for i in 0..2 * len as u8 {
+            let mut new_ns = self.ns.clone();
+            new_ns[from as usize] = i;
+            let new_prob = Prob { ns: new_ns };
+
+            if new_prob.check_ns() {
+                return result.push(new_prob);
+            }
+
+            if from < len as u8 - 1 {
+                new_prob.rec_solve_fill(from + 1, result);
+            }
+        }
+    }
+
+    fn rec_solve(&self, from: u8) -> Option<Prob> {
+        let len = self.len();
+
+        for i in 0..2 * len as u8 {
+            let mut new_ns = self.ns.clone();
+            new_ns[from as usize] = i;
+            let new_prob = Prob { ns: new_ns };
+
+            if new_prob.check_ns() {
+                return Some(new_prob);
+            }
+
+            if from < len as u8 - 1 {
+                if let Some(p) = new_prob.rec_solve(from + 1) {
+                    return Some(p);
                 }
             }
-            None
         }
+        None
     }
 }
 
@@ -69,7 +99,15 @@ impl Display for Prob {
 }
 
 fn main() {
-    let prob = Prob { ns: vec![0; 10] };
+    let prob = Prob { ns: vec![0; 5] };
 
-    println!("{:?}", prob.solve(0));
+    println!("=== First Solution ===");
+    if let Some(p) = prob.first_solution() {
+        println!("{}", p);
+    }
+
+    println!("=== All Solutions ===");
+    for p in prob.all_solutions() {
+        println!("{}", p);
+    }
 }

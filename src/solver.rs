@@ -1,10 +1,6 @@
 /// A solvable problem, with one to many solutions
-pub trait Solvable {
+pub trait Solvable<T> {
+    fn first_solution(&self) -> Option<T>;
 
-}
-
-pub trait Solver<T> {
-    fn first_solution() -> T;
-
-    fn all_solutions() -> [T];
+    fn all_solutions(&self) -> Vec<T>;
 }
