@@ -2,5 +2,5 @@
 pub trait Solvable<T> {
     fn first_solution(&self) -> Option<T>;
 
-    fn all_solutions(&self) -> Vec<T>;
+    // fn all_solutions<'a>(&'a self) -> Box<dyn Iterator<Item = &'a T> + 'a>;
 }
